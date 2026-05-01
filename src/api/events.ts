@@ -1,26 +1,26 @@
 import { eventsApi } from './http';
-import type { Evento, EventoInput } from '@/types/event';
+import type { Show, ShowInput } from '@/types/event';
 
-export async function listEvents(): Promise<Evento[]> {
-  const { data } = await eventsApi.get<Evento[]>('/events');
+export async function listShows(): Promise<Show[]> {
+  const { data } = await eventsApi.get<Show[]>('/api/eventos');
   return data;
 }
 
-export async function getEvent(id: string): Promise<Evento> {
-  const { data } = await eventsApi.get<Evento>(`/events/${id}`);
+export async function getShow(id: number): Promise<Show> {
+  const { data } = await eventsApi.get<Show>(`/api/eventos/${id}`);
   return data;
 }
 
-export async function createEvent(payload: EventoInput): Promise<Evento> {
-  const { data } = await eventsApi.post<Evento>('/events', payload);
+export async function createShow(payload: ShowInput): Promise<Show> {
+  const { data } = await eventsApi.post<Show>('/api/eventos', payload);
   return data;
 }
 
-export async function updateEvent(id: string, payload: Partial<EventoInput>): Promise<Evento> {
-  const { data } = await eventsApi.put<Evento>(`/events/${id}`, payload);
+export async function updateShow(id: number, payload: ShowInput): Promise<Show> {
+  const { data } = await eventsApi.put<Show>(`/api/eventos/${id}`, payload);
   return data;
 }
 
-export async function deleteEvent(id: string): Promise<void> {
-  await eventsApi.delete(`/events/${id}`);
+export async function deleteShow(id: number): Promise<void> {
+  await eventsApi.delete(`/api/eventos/${id}`);
 }

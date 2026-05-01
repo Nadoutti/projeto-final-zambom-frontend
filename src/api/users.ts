@@ -1,10 +1,20 @@
 import { usersApi } from './http';
-import type { Role, User } from '@/types/user';
+import type {
+  LoginPayload,
+  LoginResponse,
+  RegisterPayload,
+  UpdateUserPayload,
+  User,
+} from '@/types/user';
 
-export interface UserUpsertPayload {
-  nome: string;
-  email: string;
-  role: Role;
+export async function login(payload: LoginPayload): Promise<LoginResponse> {
+  const { data } = await usersApi.post<LoginResponse>('/login', payload);
+  return data;
+}
+
+export async function getMe(): Promise<User> {
+  const { data } = await usersApi.get<User>('/getme');
+  return data;
 }
 
 export async function listUsers(): Promise<User[]> {
@@ -12,12 +22,12 @@ export async function listUsers(): Promise<User[]> {
   return data;
 }
 
-export async function createUser(payload: UserUpsertPayload): Promise<User> {
+export async function createUser(payload: RegisterPayload): Promise<User> {
   const { data } = await usersApi.post<User>('/users', payload);
   return data;
 }
 
-export async function updateUser(id: string, payload: Partial<UserUpsertPayload>): Promise<User> {
+export async function updateUser(id: string, payload: UpdateUserPayload): Promise<User> {
   const { data } = await usersApi.put<User>(`/users/${id}`, payload);
   return data;
 }

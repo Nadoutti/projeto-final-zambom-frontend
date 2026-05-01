@@ -1,20 +1,19 @@
-import { CalendarDays, MapPin, Ticket as TicketIcon, User } from 'lucide-react';
+import { CalendarDays, MapPin, Ticket as TicketIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { formatBRL, formatDateTime } from '@/lib/utils';
-import type { Evento } from '@/types/event';
-import type { Ingresso } from '@/types/ticket';
+import { formatDateTime } from '@/lib/utils';
+import type { Show } from '@/types/event';
+import type { Ticket } from '@/types/ticket';
 
 interface Props {
-  ticket: Ingresso;
-  event?: Evento;
-  onCancel?: (id: string) => void;
+  ticket: Ticket;
+  show?: Show;
+  onCancel?: (id: number) => void;
   cancelling?: boolean;
 }
 
-export function TicketCard({ ticket, event, onCancel, cancelling }: Props) {
+export function TicketCard({ ticket, show, onCancel, cancelling }: Props) {
   const cancelado = ticket.status === 'cancelado';
-  const total = ticket.precoUnit * ticket.quantidade;
 
   return (
     <Card className={cancelado ? 'opacity-60' : ''}>
@@ -23,21 +22,20 @@ export function TicketCard({ ticket, event, onCancel, cancelling }: Props) {
           <div className="space-y-1">
             <h3 className="font-semibold flex items-center gap-2">
               <TicketIcon className="h-4 w-4 text-primary" />
-              {event?.nome ?? 'Evento'}
+              {show?.name ?? `Show #${ticket.show_id}`}
             </h3>
-            {event && (
+            {show && (
               <>
                 <div className="text-xs text-muted-foreground flex items-center gap-1.5">
-                  <CalendarDays className="h-3.5 w-3.5" /> {formatDateTime(event.data)}
+                  <CalendarDays className="h-3.5 w-3.5" /> {formatDateTime(show.date)}
                 </div>
                 <div className="text-xs text-muted-foreground flex items-center gap-1.5">
-                  <MapPin className="h-3.5 w-3.5" /> {event.local}
+                  <MapPin className="h-3.5 w-3.5" /> {show.city}, {show.state}
                 </div>
               </>
             )}
-            <div className="text-xs text-muted-foreground flex items-center gap-1.5">
-              <User className="h-3.5 w-3.5" /> {ticket.comprador}
-              {ticket.email && <span>· {ticket.email}</span>}
+            <div className="text-xs text-muted-foreground">
+              Comprado em {formatDateTime(ticket.created_at)}
             </div>
           </div>
           <span
@@ -49,14 +47,8 @@ export function TicketCard({ ticket, event, onCancel, cancelling }: Props) {
           </span>
         </div>
 
-        <div className="flex items-end justify-between border-t pt-3">
-          <div className="text-sm">
-            <div className="text-muted-foreground">
-              {ticket.quantidade}x {formatBRL(ticket.precoUnit)}
-            </div>
-            <div className="font-semibold">{formatBRL(total)}</div>
-          </div>
-          {!cancelado && onCancel && (
+        {!cancelado && onCancel && (
+          <div className="flex justify-end border-t pt-3">
             <Button
               variant="outline"
               size="sm"
@@ -65,8 +57,8 @@ export function TicketCard({ ticket, event, onCancel, cancelling }: Props) {
             >
               {cancelling ? 'Cancelando...' : 'Cancelar'}
             </Button>
-          )}
-        </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

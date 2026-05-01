@@ -14,30 +14,33 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { EventForm } from '@/components/events/EventForm';
-import { createEvent, deleteEvent, listEvents, updateEvent } from '@/api/events';
-import { formatBRL, formatDateTime } from '@/lib/utils';
-import type { Evento, EventoInput } from '@/types/event';
+import { createShow, deleteShow, listShows, updateShow } from '@/api/events';
+import { formatDateTime } from '@/lib/utils';
+import type { Show, ShowInput } from '@/types/event';
 
 export function EventsAdminPage() {
   const qc = useQueryClient();
-  const [editing, setEditing] = useState<Evento | null>(null);
+  const [editing, setEditing] = useState<Show | null>(null);
   const [open, setOpen] = useState(false);
 
-  const { data: events = [], isLoading } = useQuery({
-    queryKey: ['events'],
-    queryFn: listEvents,
+  const { data: shows = [], isLoading } = useQuery({
+    queryKey: ['shows'],
+    queryFn: listShows,
   });
 
   function errorMessage(err: unknown, fallback: string) {
-    return axios.isAxiosError(err) ? err.response?.data?.message ?? fallback : fallback;
+    if (axios.isAxiosError(err)) {
+      return err.response?.data?.error ?? err.response?.data?.message ?? fallback;
+    }
+    return fallback;
   }
 
   const saveMutation = useMutation({
-    mutationFn: (input: EventoInput) =>
-      editing ? updateEvent(editing.id, input) : createEvent(input),
+    mutationFn: (input: ShowInput) =>
+      editing ? updateShow(editing.id, input) : createShow(input),
     onSuccess: () => {
       toast.success(editing ? 'Evento atualizado' : 'Evento criado');
-      qc.invalidateQueries({ queryKey: ['events'] });
+      qc.invalidateQueries({ queryKey: ['shows'] });
       setOpen(false);
       setEditing(null);
     },
@@ -45,10 +48,10 @@ export function EventsAdminPage() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => deleteEvent(id),
+    mutationFn: (id: number) => deleteShow(id),
     onSuccess: () => {
       toast.success('Evento excluído');
-      qc.invalidateQueries({ queryKey: ['events'] });
+      qc.invalidateQueries({ queryKey: ['shows'] });
     },
     onError: (err) => toast.error(errorMessage(err, 'Falha ao excluir')),
   });
@@ -57,8 +60,8 @@ export function EventsAdminPage() {
     setEditing(null);
     setOpen(true);
   }
-  function handleEdit(ev: Evento) {
-    setEditing(ev);
+  function handleEdit(show: Show) {
+    setEditing(show);
     setOpen(true);
   }
 
@@ -79,10 +82,10 @@ export function EventsAdminPage() {
           <TableHeader>
             <TableRow>
               <TableHead>Nome</TableHead>
+              <TableHead>Tipo</TableHead>
               <TableHead>Data</TableHead>
               <TableHead>Local</TableHead>
-              <TableHead>Preço</TableHead>
-              <TableHead>Estoque</TableHead>
+              <TableHead>Capacidade</TableHead>
               <TableHead className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
@@ -94,30 +97,32 @@ export function EventsAdminPage() {
                 </TableCell>
               </TableRow>
             )}
-            {!isLoading && events.length === 0 && (
+            {!isLoading && shows.length === 0 && (
               <TableRow>
                 <TableCell colSpan={6} className="text-center text-muted-foreground">
                   Nenhum evento ainda.
                 </TableCell>
               </TableRow>
             )}
-            {events.map((ev) => (
-              <TableRow key={ev.id}>
-                <TableCell className="font-medium max-w-[280px] truncate">{ev.nome}</TableCell>
-                <TableCell>{formatDateTime(ev.data)}</TableCell>
-                <TableCell className="max-w-[220px] truncate">{ev.local}</TableCell>
-                <TableCell>{formatBRL(ev.preco)}</TableCell>
-                <TableCell>{ev.estoque}</TableCell>
+            {shows.map((show) => (
+              <TableRow key={show.id}>
+                <TableCell className="font-medium max-w-[260px] truncate">{show.name}</TableCell>
+                <TableCell>{show.show_type}</TableCell>
+                <TableCell>{formatDateTime(show.date)}</TableCell>
+                <TableCell className="max-w-[220px] truncate">
+                  {show.city}, {show.state}
+                </TableCell>
+                <TableCell>{show.capacity}</TableCell>
                 <TableCell className="text-right">
                   <div className="inline-flex gap-2">
-                    <Button variant="ghost" size="icon" onClick={() => handleEdit(ev)}>
+                    <Button variant="ghost" size="icon" onClick={() => handleEdit(show)}>
                       <Pencil className="h-4 w-4" />
                     </Button>
                     <Button
                       variant="ghost"
                       size="icon"
                       onClick={() => {
-                        if (confirm(`Excluir "${ev.nome}"?`)) deleteMutation.mutate(ev.id);
+                        if (confirm(`Excluir "${show.name}"?`)) deleteMutation.mutate(show.id);
                       }}
                     >
                       <Trash2 className="h-4 w-4 text-destructive" />

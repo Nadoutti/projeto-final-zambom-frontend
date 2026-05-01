@@ -5,46 +5,46 @@ import axios from 'axios';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { TicketCard } from '@/components/tickets/TicketCard';
-import { listTickets, cancelTicket } from '@/api/tickets';
-import { listEvents } from '@/api/events';
+import { listTicketsByUser, cancelTicket } from '@/api/tickets';
+import { listShows } from '@/api/events';
+import { useAuth } from '@/auth/AuthContext';
 
 export function TicketsPage() {
   const qc = useQueryClient();
-  const [pendingId, setPendingId] = useState<string | null>(null);
+  const { user } = useAuth();
+  const [pendingId, setPendingId] = useState<number | null>(null);
 
   const { data: tickets = [], isLoading } = useQuery({
-    queryKey: ['tickets'],
-    queryFn: listTickets,
+    queryKey: ['tickets', 'user', user?.id],
+    queryFn: () => listTicketsByUser(user!.id),
+    enabled: !!user,
   });
-  const { data: events = [] } = useQuery({
-    queryKey: ['events'],
-    queryFn: listEvents,
-  });
+  const { data: shows = [] } = useQuery({ queryKey: ['shows'], queryFn: listShows });
 
   const cancelMutation = useMutation({
-    mutationFn: (id: string) => cancelTicket(id),
+    mutationFn: (id: number) => cancelTicket(id),
     onMutate: (id) => setPendingId(id),
     onSuccess: () => {
       toast.success('Ingresso cancelado');
       qc.invalidateQueries({ queryKey: ['tickets'] });
-      qc.invalidateQueries({ queryKey: ['events'] });
+      qc.invalidateQueries({ queryKey: ['shows'] });
     },
     onError: (err) => {
       const msg = axios.isAxiosError(err)
-        ? err.response?.data?.message ?? 'Falha ao cancelar'
+        ? err.response?.data?.detail ?? err.response?.data?.message ?? 'Falha ao cancelar'
         : 'Falha ao cancelar';
       toast.error(msg);
     },
     onSettled: () => setPendingId(null),
   });
 
-  const eventsById = new Map(events.map((e) => [e.id, e]));
+  const showsById = new Map(shows.map((s) => [s.id, s]));
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Ingressos</h1>
-        <p className="text-muted-foreground">Todas as compras realizadas.</p>
+        <h1 className="text-3xl font-bold">Meus ingressos</h1>
+        <p className="text-muted-foreground">Todas as suas compras.</p>
       </div>
 
       {isLoading && <p className="text-muted-foreground">Carregando...</p>}
@@ -64,7 +64,7 @@ export function TicketsPage() {
             <TicketCard
               key={t.id}
               ticket={t}
-              event={eventsById.get(t.eventId)}
+              show={showsById.get(t.show_id)}
               onCancel={(id) => cancelMutation.mutate(id)}
               cancelling={pendingId === t.id}
             />

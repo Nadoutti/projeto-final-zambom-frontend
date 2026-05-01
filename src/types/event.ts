@@ -1,12 +1,14 @@
-export interface Evento {
-  id: string;
-  nome: string;
-  descricao: string;
-  data: string;
-  local: string;
-  preco: number;
-  estoque: number;
-  imagem?: string;
+export interface Show {
+  id: number;
+  name: string;
+  country: string;
+  state: string;
+  city: string;
+  address: string;
+  date: string;
+  show_type: string;
+  capacity: number;
+  created_at?: string;
 }
 
-export type EventoInput = Omit<Evento, 'id'>;
+export type ShowInput = Omit<Show, 'id' | 'created_at'>;

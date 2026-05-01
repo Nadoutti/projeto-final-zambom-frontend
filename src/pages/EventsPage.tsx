@@ -1,11 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
-import { listEvents } from '@/api/events';
+import { listShows } from '@/api/events';
 import { EventCard } from '@/components/events/EventCard';
 
 export function EventsPage() {
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['events'],
-    queryFn: listEvents,
+    queryKey: ['shows'],
+    queryFn: listShows,
   });
 
   return (
@@ -26,8 +26,8 @@ export function EventsPage() {
 
       {data && data.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {data.map((ev) => (
-            <EventCard key={ev.id} event={ev} />
+          {data.map((show) => (
+            <EventCard key={show.id} show={show} />
           ))}
         </div>
       )}

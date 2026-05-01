@@ -9,12 +9,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import type { Role, User } from '@/types/user';
+import { toast } from 'sonner';
+import { isValidCPF, onlyDigits } from '@/lib/utils';
+import type { User } from '@/types/user';
 
 export interface UserFormPayload {
-  nome: string;
+  name: string;
   email: string;
-  role: Role;
+  cpf: string;
+  password?: string;
+  admin: boolean;
 }
 
 interface Props {
@@ -25,26 +29,41 @@ interface Props {
 }
 
 export function UserForm({ initial, submitting, onSubmit, onCancel }: Props) {
-  const [nome, setNome] = useState('');
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [role, setRole] = useState<Role>('user');
+  const [cpf, setCpf] = useState('');
+  const [password, setPassword] = useState('');
+  const [admin, setAdmin] = useState<'admin' | 'user'>('user');
 
   useEffect(() => {
-    setNome(initial?.nome ?? '');
+    setName(initial?.name ?? '');
     setEmail(initial?.email ?? '');
-    setRole(initial?.role ?? 'user');
+    setCpf(initial?.cpf ?? '');
+    setPassword('');
+    setAdmin(initial?.admin ? 'admin' : 'user');
   }, [initial]);
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    onSubmit({ nome, email, role });
+    if (!isValidCPF(cpf)) {
+      toast.error('CPF inválido — informe os 11 dígitos');
+      return;
+    }
+    const payload: UserFormPayload = {
+      name,
+      email,
+      cpf: onlyDigits(cpf),
+      admin: admin === 'admin',
+    };
+    if (password) payload.password = password;
+    onSubmit(payload);
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="nome">Nome</Label>
-        <Input id="nome" value={nome} onChange={(e) => setNome(e.target.value)} required />
+        <Label htmlFor="name">Nome</Label>
+        <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required />
       </div>
       <div className="space-y-2">
         <Label htmlFor="email">E-mail</Label>
@@ -57,8 +76,24 @@ export function UserForm({ initial, submitting, onSubmit, onCancel }: Props) {
         />
       </div>
       <div className="space-y-2">
+        <Label htmlFor="cpf">CPF</Label>
+        <Input id="cpf" value={cpf} onChange={(e) => setCpf(e.target.value)} required />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="password">{initial ? 'Nova senha (opcional)' : 'Senha'}</Label>
+        <Input
+          id="password"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required={!initial}
+          minLength={initial ? 0 : 6}
+          placeholder={initial ? 'Deixe em branco para manter' : ''}
+        />
+      </div>
+      <div className="space-y-2">
         <Label>Papel</Label>
-        <Select value={role} onValueChange={(v) => setRole(v as Role)}>
+        <Select value={admin} onValueChange={(v) => setAdmin(v as 'admin' | 'user')}>
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>

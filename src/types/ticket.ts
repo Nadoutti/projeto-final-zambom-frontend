@@ -1,19 +1,13 @@
 export type TicketStatus = 'ativo' | 'cancelado';
 
-export interface Ingresso {
-  id: string;
-  eventId: string;
-  quantidade: number;
-  precoUnit: number;
-  comprador: string;
-  email?: string;
-  criadoEm: string;
+export interface Ticket {
+  id: number;
+  user_id: string;
+  show_id: number;
   status: TicketStatus;
+  created_at: string;
 }
 
 export interface BuyTicketPayload {
-  eventId: string;
-  quantidade: number;
-  comprador: string;
-  email?: string;
+  show_id: number;
 }

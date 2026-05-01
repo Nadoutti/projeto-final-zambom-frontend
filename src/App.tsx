@@ -2,6 +2,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'sonner';
 import { AppRouter } from '@/routes/AppRouter';
+import { AuthProvider } from '@/auth/AuthContext';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -16,8 +17,10 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <AppRouter />
-        <Toaster richColors position="top-right" />
+        <AuthProvider>
+          <AppRouter />
+          <Toaster richColors position="top-right" />
+        </AuthProvider>
       </BrowserRouter>
     </QueryClientProvider>
   );

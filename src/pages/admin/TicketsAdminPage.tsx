@@ -19,35 +19,37 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { listTickets, cancelTicket } from '@/api/tickets';
-import { listEvents } from '@/api/events';
-import { formatBRL, formatDateTime } from '@/lib/utils';
+import { listAllTickets, cancelTicket } from '@/api/tickets';
+import { listShows } from '@/api/events';
+import { formatDateTime } from '@/lib/utils';
 
 export function TicketsAdminPage() {
   const qc = useQueryClient();
-  const [eventFilter, setEventFilter] = useState<string>('all');
+  const [showFilter, setShowFilter] = useState<string>('all');
 
   const { data: tickets = [], isLoading } = useQuery({
     queryKey: ['tickets'],
-    queryFn: listTickets,
+    queryFn: listAllTickets,
   });
-  const { data: events = [] } = useQuery({ queryKey: ['events'], queryFn: listEvents });
+  const { data: shows = [] } = useQuery({ queryKey: ['shows'], queryFn: listShows });
 
-  const eventsById = useMemo(() => new Map(events.map((e) => [e.id, e])), [events]);
+  const showsById = useMemo(() => new Map(shows.map((s) => [s.id, s])), [shows]);
 
   const filtered =
-    eventFilter === 'all' ? tickets : tickets.filter((t) => t.eventId === eventFilter);
+    showFilter === 'all'
+      ? tickets
+      : tickets.filter((t) => String(t.show_id) === showFilter);
 
   const cancelMutation = useMutation({
-    mutationFn: (id: string) => cancelTicket(id),
+    mutationFn: (id: number) => cancelTicket(id),
     onSuccess: () => {
       toast.success('Ingresso cancelado');
       qc.invalidateQueries({ queryKey: ['tickets'] });
-      qc.invalidateQueries({ queryKey: ['events'] });
+      qc.invalidateQueries({ queryKey: ['shows'] });
     },
     onError: (err) => {
       const msg = axios.isAxiosError(err)
-        ? err.response?.data?.message ?? 'Falha ao cancelar'
+        ? err.response?.data?.detail ?? err.response?.data?.message ?? 'Falha ao cancelar'
         : 'Falha ao cancelar';
       toast.error(msg);
     },
@@ -63,15 +65,15 @@ export function TicketsAdminPage() {
           </p>
         </div>
         <div className="w-full sm:w-72">
-          <Select value={eventFilter} onValueChange={setEventFilter}>
+          <Select value={showFilter} onValueChange={setShowFilter}>
             <SelectTrigger>
               <SelectValue placeholder="Filtrar por evento" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos os eventos</SelectItem>
-              {events.map((ev) => (
-                <SelectItem key={ev.id} value={ev.id}>
-                  {ev.nome}
+              {shows.map((s) => (
+                <SelectItem key={s.id} value={String(s.id)}>
+                  {s.name}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -84,9 +86,7 @@ export function TicketsAdminPage() {
           <TableHeader>
             <TableRow>
               <TableHead>Evento</TableHead>
-              <TableHead>Comprador</TableHead>
-              <TableHead>Qtd</TableHead>
-              <TableHead>Total</TableHead>
+              <TableHead>Usuário</TableHead>
               <TableHead>Quando</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Ações</TableHead>
@@ -95,32 +95,27 @@ export function TicketsAdminPage() {
           <TableBody>
             {isLoading && (
               <TableRow>
-                <TableCell colSpan={7} className="text-center text-muted-foreground">
+                <TableCell colSpan={5} className="text-center text-muted-foreground">
                   Carregando...
                 </TableCell>
               </TableRow>
             )}
             {!isLoading && filtered.length === 0 && (
               <TableRow>
-                <TableCell colSpan={7} className="text-center text-muted-foreground">
+                <TableCell colSpan={5} className="text-center text-muted-foreground">
                   Nenhum ingresso.
                 </TableCell>
               </TableRow>
             )}
             {filtered.map((t) => {
-              const ev = eventsById.get(t.eventId);
+              const show = showsById.get(t.show_id);
               return (
                 <TableRow key={t.id}>
                   <TableCell className="font-medium max-w-[260px] truncate">
-                    {ev?.nome ?? t.eventId}
+                    {show?.name ?? `Show #${t.show_id}`}
                   </TableCell>
-                  <TableCell>
-                    <div>{t.comprador}</div>
-                    {t.email && <div className="text-xs text-muted-foreground">{t.email}</div>}
-                  </TableCell>
-                  <TableCell>{t.quantidade}</TableCell>
-                  <TableCell>{formatBRL(t.precoUnit * t.quantidade)}</TableCell>
-                  <TableCell>{formatDateTime(t.criadoEm)}</TableCell>
+                  <TableCell className="font-mono text-xs">{t.user_id}</TableCell>
+                  <TableCell>{formatDateTime(t.created_at)}</TableCell>
                   <TableCell>
                     <span
                       className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${

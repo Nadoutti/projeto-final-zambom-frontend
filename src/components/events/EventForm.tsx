@@ -2,13 +2,12 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import type { Evento, EventoInput } from '@/types/event';
+import type { Show, ShowInput } from '@/types/event';
 
 interface Props {
-  initial?: Evento | null;
+  initial?: Show | null;
   submitting?: boolean;
-  onSubmit: (data: EventoInput) => void;
+  onSubmit: (data: ShowInput) => void;
   onCancel: () => void;
 }
 
@@ -19,112 +18,105 @@ function toLocalInput(iso: string): string {
 }
 
 export function EventForm({ initial, submitting, onSubmit, onCancel }: Props) {
-  const [nome, setNome] = useState('');
-  const [descricao, setDescricao] = useState('');
-  const [data, setData] = useState('');
-  const [local, setLocal] = useState('');
-  const [preco, setPreco] = useState(0);
-  const [estoque, setEstoque] = useState(0);
-  const [imagem, setImagem] = useState('');
+  const [name, setName] = useState('');
+  const [showType, setShowType] = useState('');
+  const [country, setCountry] = useState('Brasil');
+  const [state, setState] = useState('');
+  const [city, setCity] = useState('');
+  const [address, setAddress] = useState('');
+  const [date, setDate] = useState('');
+  const [capacity, setCapacity] = useState(0);
 
   useEffect(() => {
     if (initial) {
-      setNome(initial.nome);
-      setDescricao(initial.descricao);
-      setData(toLocalInput(initial.data));
-      setLocal(initial.local);
-      setPreco(initial.preco);
-      setEstoque(initial.estoque);
-      setImagem(initial.imagem ?? '');
+      setName(initial.name);
+      setShowType(initial.show_type);
+      setCountry(initial.country);
+      setState(initial.state);
+      setCity(initial.city);
+      setAddress(initial.address);
+      setDate(toLocalInput(initial.date));
+      setCapacity(initial.capacity);
     } else {
-      setNome('');
-      setDescricao('');
-      setData('');
-      setLocal('');
-      setPreco(0);
-      setEstoque(0);
-      setImagem('');
+      setName('');
+      setShowType('');
+      setCountry('Brasil');
+      setState('');
+      setCity('');
+      setAddress('');
+      setDate('');
+      setCapacity(0);
     }
   }, [initial]);
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
     onSubmit({
-      nome,
-      descricao,
-      data: new Date(data).toISOString(),
-      local,
-      preco: Number(preco),
-      estoque: Number(estoque),
-      imagem: imagem || undefined,
+      name,
+      show_type: showType,
+      country,
+      state,
+      city,
+      address,
+      date: new Date(date).toISOString(),
+      capacity: Number(capacity),
     });
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="nome">Nome do evento</Label>
-        <Input id="nome" value={nome} onChange={(e) => setNome(e.target.value)} required />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="descricao">Descrição</Label>
-        <Textarea
-          id="descricao"
-          value={descricao}
-          onChange={(e) => setDescricao(e.target.value)}
-          required
-        />
-      </div>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="space-y-2 sm:col-span-2">
+          <Label htmlFor="name">Nome do evento</Label>
+          <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required />
+        </div>
         <div className="space-y-2">
-          <Label htmlFor="data">Data e hora</Label>
+          <Label htmlFor="show_type">Tipo</Label>
           <Input
-            id="data"
+            id="show_type"
+            value={showType}
+            onChange={(e) => setShowType(e.target.value)}
+            placeholder="show, festival, teatro..."
+            required
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="date">Data e hora</Label>
+          <Input
+            id="date"
             type="datetime-local"
-            value={data}
-            onChange={(e) => setData(e.target.value)}
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
             required
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="local">Local</Label>
-          <Input id="local" value={local} onChange={(e) => setLocal(e.target.value)} required />
+          <Label htmlFor="country">País</Label>
+          <Input id="country" value={country} onChange={(e) => setCountry(e.target.value)} required />
         </div>
-      </div>
-      <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2">
-          <Label htmlFor="preco">Preço (R$)</Label>
+          <Label htmlFor="state">Estado</Label>
+          <Input id="state" value={state} onChange={(e) => setState(e.target.value)} required />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="city">Cidade</Label>
+          <Input id="city" value={city} onChange={(e) => setCity(e.target.value)} required />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="capacity">Capacidade</Label>
           <Input
-            id="preco"
+            id="capacity"
             type="number"
             min={0}
-            step="0.01"
-            value={preco}
-            onChange={(e) => setPreco(Number(e.target.value))}
+            value={capacity}
+            onChange={(e) => setCapacity(Number(e.target.value))}
             required
           />
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="estoque">Estoque</Label>
-          <Input
-            id="estoque"
-            type="number"
-            min={0}
-            value={estoque}
-            onChange={(e) => setEstoque(Number(e.target.value))}
-            required
-          />
+        <div className="space-y-2 sm:col-span-2">
+          <Label htmlFor="address">Endereço</Label>
+          <Input id="address" value={address} onChange={(e) => setAddress(e.target.value)} required />
         </div>
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="imagem">URL da imagem (opcional)</Label>
-        <Input
-          id="imagem"
-          type="url"
-          placeholder="https://..."
-          value={imagem}
-          onChange={(e) => setImagem(e.target.value)}
-        />
       </div>
       <div className="flex justify-end gap-2 pt-2">
         <Button type="button" variant="outline" onClick={onCancel} disabled={submitting}>

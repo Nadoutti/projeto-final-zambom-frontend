@@ -9,7 +9,7 @@ export function AppLayout() {
         <Outlet />
       </main>
       <footer className="border-t py-4 text-center text-xs text-muted-foreground">
-        Zambom Ingressos · Projeto 4º semestre · dados mockados via MSW
+        Zambom Ingressos · Projeto 4º semestre
       </footer>
     </div>
   );

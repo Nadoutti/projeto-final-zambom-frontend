@@ -18,3 +18,11 @@ export function formatDateTime(iso: string): string {
     minute: '2-digit',
   });
 }
+
+export function onlyDigits(value: string): string {
+  return value.replace(/\D/g, '');
+}
+
+export function isValidCPF(value: string): boolean {
+  return onlyDigits(value).length === 11;
+}
