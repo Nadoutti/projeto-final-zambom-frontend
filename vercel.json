@@ -1,0 +1,7 @@
+{
+  "rewrites": [
+    { "source": "/api/users/:path*", "destination": "http://18.231.228.124:8001/:path*" },
+    { "source": "/api/events/:path*", "destination": "http://18.231.228.124:8002/:path*" },
+    { "source": "/api/tickets/:path*", "destination": "http://18.231.228.124:8000/:path*" }
+  ]
+}
