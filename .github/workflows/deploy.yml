@@ -43,6 +43,6 @@ jobs:
           key: ${{ secrets.KEY_TEST }}
           port: 22
           script: |
-            docker stop ingressos-frontend || true
-            docker rm --force ingressos-frontend || true
-            docker run -d -p 3000:80 --network=rede --name ingressos-frontend nadoutti/ingressos-frontend:${{ github.sha }}
+            sudo docker stop ingressos-frontend || true
+            sudo docker rm --force ingressos-frontend || true
+            sudo docker run -d -p 3000:80 --network=rede --name ingressos-frontend nadoutti/ingressos-frontend:${{ github.sha }}
